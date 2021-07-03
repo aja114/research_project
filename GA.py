@@ -95,8 +95,8 @@ def train(env):
     h2 = 64
     out = 3
     mu_prob = 0.2
-    generation = 50
-    population = 80
+    generation = 100
+    population = 30
 
     prop_selected = 0.3
 

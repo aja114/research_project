@@ -7,7 +7,7 @@ from tensorflow import keras
 
 
 class NNnumpy:
-    def __init__(self, inp=2, h1=64, h2=64, out=3, init_weights=None):
+    def __init__(self, inp=2, h1=256, h2=256, out=3, init_weights=None):
         if init_weights:
             self.init_weights(init_weights)
         else:
@@ -57,19 +57,19 @@ class NNtf:
     def __init__(self, *args, **kwargs):
         self.build_model(*args, **kwargs)
 
-    def build_model(self, inp=2, h1=32, h2=32, out=3, init_weights=None):
+    def build_model(self, inp=2, h1=256, h2=256, out=3, init_weights=None):
         inp = keras.Input(shape=(inp, ))
         x = keras.layers.Dense(
             h1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(inp)
         x = keras.layers.Dense(
             h2, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(x)
         outp = keras.layers.Dense(
-            out, activation='linear', use_bias=True, kernel_initializer='glorot_uniform')(x)
+            out, activation='softmax', use_bias=True, kernel_initializer='glorot_uniform')(x)
 
         # self.lr = keras.optimizers.schedules.ExponentialDecay(
-        #     initial_learning_rate=1e-2, decay_steps=10000, decay_rate=0.99)
-        self.lr = 5e-3
-        self.optimizer = keras.optimizers.Adam(learning_rate=self.lr)
+        #     initial_learning_rate=1e-3, decay_steps=10000, decay_rate=0.95)
+        self.lr = 1e-2
+        self.optimizer = keras.optimizers.SGD(learning_rate=self.lr)
         self.model = keras.Model(inputs=inp, outputs=outp)
 
         self.weights = self.model.trainable_weights
@@ -82,9 +82,10 @@ class NNtf:
     def forward(self, inp):
         if not isinstance(inp, tf.Tensor):
             inp = tf.convert_to_tensor(np.array(inp).reshape(1, -1))
-        logits = self.model(inp)
-        return tfp.distributions.Categorical(logits=logits)
+        probs = self.model(inp)
+        return tfp.distributions.Categorical(probs=probs)
 
     def update(self, grads):
+        # print(list(zip(grads, self.model.trainable_weights)))
         self.optimizer.apply_gradients(
             zip(grads, self.model.trainable_weights))

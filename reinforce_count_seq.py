@@ -7,10 +7,10 @@ from reinforce import Reinforce
 class ReinforceCountSeq(Reinforce):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.intrinsic_reward = 1
         self.seq_freq = defaultdict(int)
 
     def play_ep(self, num_ep=1, render=False):
+        # print("Number of sequences observed: ", len(self.seq_freq))
         for n in range(num_ep):
             state = self.env.reset()
             rewards, actions, states = [], [], []
@@ -26,18 +26,18 @@ class ReinforceCountSeq(Reinforce):
 
                 state, extrinsic_reward, done, _ = self.env.step(
                     self.env.actions[action])
+
                 seq = tuple(itertools.chain.from_iterable(states))
-                self.seq_freq[seq] += 1
                 self.state_freq[state] += 1
+                self.seq_freq[seq] += 1
 
                 intrinsic_reward = self.reward_calc(
-                    self.seq_freq[seq], t, alg='MBIE-EB')
-
-                rewards.append(extrinsic_reward)
-
-                score += extrinsic_reward
+                    self.state_freq[state], t, alg='UCB')
 
                 reward = extrinsic_reward + intrinsic_reward
+
+                rewards.append(reward)
+                score += reward
 
                 if render:
                     env.render()
@@ -53,14 +53,21 @@ class ReinforceCountSeq(Reinforce):
 
     def reward_calc(self, freq, t, alg='UCB'):
         if alg == 'UCB':
-            return np.sqrt(2*np.log(t)/freq)
+            return self.intrinsic_reward * np.sqrt(2*np.log(t)/freq)
         if alg == 'MBIE-EB':
-            return np.sqrt(1/freq)
+            return self.intrinsic_reward * np.sqrt(1/freq)
         if alg == 'BEB':
-            return 1 / freq
+            return self.intrinsic_reward / freq
+        if alg == 'BEB-SQ':
+            return self.intrinsic_reward / freq**2
 
 
-def train(env, num_iter=100):
+def train(env, num_iter=100, logs=False):
+
     agent = ReinforceCountSeq(env)
-    agent.train(num_iter)
+    if logs:
+        agent.train(num_iter)
+    else:
+        agent.train_without_logs(num_iter)
+
     return agent
