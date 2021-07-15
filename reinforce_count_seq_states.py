@@ -1,13 +1,17 @@
+from collections import defaultdict
+import itertools
 import numpy as np
 from reinforce_baseline import ReinforceBaseline
 
 
-class ReinforceCountState(ReinforceBaseline):
+class ReinforceCountSeq(ReinforceBaseline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.intrinsic_reward = 0.1
+        self.seq_freq = defaultdict(int)
+        self.intrinsic_reward = 1
 
     def play_ep(self, num_ep=1, render=False):
+        # print("Number of sequences observed: ", len(self.seq_freq))
         for n in range(num_ep):
             state = self.env.reset()
             rewards, actions, states = [], [], []
@@ -24,16 +28,19 @@ class ReinforceCountState(ReinforceBaseline):
                 state, extrinsic_reward, done, _ = self.env.step(
                     self.env.actions[action])
 
+                seq = tuple(itertools.chain.from_iterable(states))
                 self.state_freq[state] += 1
+                self.seq_freq[seq] += 1
 
                 intrinsic_reward = self.reward_calc(
-                    self.state_freq[state], t, alg='MBIE-EB')
+                    self.seq_freq[seq]*self.state_freq[state], t, alg='MBIE-EB')
 
-                reward = intrinsic_reward + extrinsic_reward
+
+                reward = extrinsic_reward + intrinsic_reward
 
                 rewards.append(reward)
                 # score += reward
-                score = extrinsic_reward
+                score += extrinsic_reward
 
                 if render:
                     env.render()
@@ -60,7 +67,7 @@ class ReinforceCountState(ReinforceBaseline):
 
 def train(env, num_iter=100, logs=False):
 
-    agent = ReinforceCountState(env)
+    agent = ReinforceCountSeq(env)
     if logs:
         agent.train(num_iter)
     else:

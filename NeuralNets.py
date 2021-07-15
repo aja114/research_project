@@ -77,9 +77,15 @@ class NNtf:
     def predict(self, inp):
         if not isinstance(inp, tf.Tensor):
             inp = tf.convert_to_tensor(np.array(inp).reshape(1, -1))
-        return np.argmax(self.model.predict(inp))
+        return np.argmax(self.model(inp))
 
     def forward(self, inp):
+        if not isinstance(inp, tf.Tensor):
+            inp = tf.convert_to_tensor(np.array(inp).reshape(1, -1))
+        probs = self.model(inp)
+        return probs.numpy().reshape(-1)
+
+    def distributions(self, inp):
         if not isinstance(inp, tf.Tensor):
             inp = tf.convert_to_tensor(np.array(inp).reshape(1, -1))
         probs = self.model(inp)

@@ -6,29 +6,42 @@ import seaborn as sns
 sns.set_context("talk")
 
 
+def policy_display(env, policy, title):
+    policy = np.array([policy[s] for s in env.states])
+    policy = policy.reshape((2, -1, env.len), order='F')
+    labels = np.vectorize(lambda x: env.actions_dic[x])(policy)
+    states_display(policy, title=title, cbar=False, annot=labels, fmt='s')
+
+
 def states_display(state_array, title=None, figsize=(10, 10), annot=True, fmt="0.1f", linewidths=.5, square=True, cbar=False, cmap="Reds", ax=None):
     if ax is None:
-        fig, ax = plt.subplots(figsize=figsize)
+        fig, axes = plt.subplots(2, 1, figsize=figsize)
 
-    sns.heatmap(state_array, annot=annot, fmt=fmt, linewidths=linewidths,
-                square=square, cbar=cbar, cmap=cmap, ax=ax,
+    states_with_key = state_array[0]
+    states_without_key = state_array[1]
+
+    annot_with_key = annot[0]
+    annot_without_key = annot[1]
+
+    sns.heatmap(states_with_key, annot=annot_with_key, fmt=fmt, linewidths=linewidths,
+                square=square, cbar=cbar, cmap=cmap, ax=axes[0],
                 cbar_kws={"orientation": "horizontal"},
                 annot_kws={"size": int(figsize[1]*1.2)})
+    axes[0].set_title('Policy without Key')
+
+    sns.heatmap(states_without_key, annot=annot_without_key, fmt=fmt, linewidths=linewidths,
+                square=square, cbar=cbar, cmap=cmap, ax=axes[1],
+                cbar_kws={"orientation": "horizontal"},
+                annot_kws={"size": int(figsize[1]*1.2)})
+    axes[1].set_title('Policy with Key')
 
     if title is not None:
-        ax.set_title(title)
+        plt.suptitle(title)
 
     if ax is None:
         plt.show()
     else:
         return ax
-
-
-def policy_display(env, policy, title):
-    policy = np.array([policy[s] for s in env.states])
-    policy = policy.reshape((2, -1), order='F')
-    labels = np.vectorize(lambda x: env.actions_dic[x])(policy)
-    states_display(policy, title=title, cbar=False, annot=labels, fmt='s')
 
 
 def argmax_tiebreaker(arr):
@@ -75,7 +88,7 @@ def plot_state_freq(state_freq):
     _ = plt.xticks(rotation='vertical')
 
 
-def plot_scores(scores, window_size=10):
+def plot_scores(scores, window_size=100):
     ma = np.convolve(scores, np.ones(window_size, dtype=int), 'valid')
     ma /= window_size
     x = np.arange(len(scores))

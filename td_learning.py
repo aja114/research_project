@@ -8,7 +8,7 @@ def td_learning(policy, env, alpha=0.1, alpha_factor=0.995, gamma=0.95, display=
     v_array = np.zeros(env.states_n)
     v_array_tmp = np.zeros(env.states_n)
 
-    for e in range(env._max_episode_steps):
+    for e in range(100):
 
         if alpha_factor is not None:
             alpha = alpha * alpha_factor
@@ -28,7 +28,7 @@ def td_learning(policy, env, alpha=0.1, alpha_factor=0.995, gamma=0.95, display=
         if display and e % DISPLAY_EVERY_N_EPISODES == 0:
             states_display(v_array.T)
 
-    return v_array.T
+    return v_array.T.reshape((2, -1, env.len), order='F')
 
 
 def q_learning(env, alpha=0.1, alpha_factor=0.9995, gamma=0.9, epsilon=0.1, num_episodes=5000, display=True):

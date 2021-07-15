@@ -1,13 +1,15 @@
 from collections import defaultdict
 import itertools
 import numpy as np
+from reinforce_baseline import ReinforceBaseline
 from reinforce import Reinforce
 
 
-class ReinforceCountSeq(Reinforce):
+class ReinforceCountSeq(ReinforceBaseline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.seq_freq = defaultdict(int)
+        self.intrinsic_reward = 1
 
     def play_ep(self, num_ep=1, render=False):
         # print("Number of sequences observed: ", len(self.seq_freq))
@@ -17,7 +19,7 @@ class ReinforceCountSeq(Reinforce):
             score = 0
             t = 0
             done = False
-
+            seq = []
             while not done and t < self.env._max_episode_steps:
                 t += 1
                 action = self.sample_action(state)
@@ -27,17 +29,21 @@ class ReinforceCountSeq(Reinforce):
                 state, extrinsic_reward, done, _ = self.env.step(
                     self.env.actions[action])
 
-                seq = tuple(itertools.chain.from_iterable(states))
                 self.state_freq[state] += 1
-                self.seq_freq[seq] += 1
 
-                intrinsic_reward = self.reward_calc(
-                    self.state_freq[state], t, alg='UCB')
+                if state not in states:
+                    seq += state
+                    self.seq_freq[tuple(seq)] += 1
+                    intrinsic_reward = self.reward_calc(
+                        self.seq_freq[tuple(seq)], t, alg='MBIE-EB')
+                else:
+                    intrinsic_reward = 0
 
                 reward = extrinsic_reward + intrinsic_reward
 
                 rewards.append(reward)
-                score += reward
+                # score += reward
+                score += extrinsic_reward
 
                 if render:
                     env.render()
