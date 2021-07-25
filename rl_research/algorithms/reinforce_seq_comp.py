@@ -52,7 +52,8 @@ class ReinforceSeqComp(ReinforceBaseline):
                 if render:
                     env.render()
 
-            graph_info = list(grakel.graph_from_networkx([G], node_labels_tag='label'))[0]
+            graph_info = list(grakel.graph_from_networkx(
+                [G], node_labels_tag='label'))[0]
             print(graph_info)
             graph = grakel.Graph(graph_info[0], node_labels=graph_info[1])
             graph_kernel.fit([graph])
@@ -70,16 +71,13 @@ class ReinforceSeqComp(ReinforceBaseline):
             adj = scipy.sparse.csr_matrix(graph.get_adjacency_matrix())
             print(adj.toarray())
             graph.convert_labels('adjacency')
-            pos = np.array([graph.index_node_labels[i] for i in range(len(graph.index_node_labels))])
+            pos = np.array([graph.index_node_labels[i]
+                            for i in range(len(graph.index_node_labels))])
             im = sknetwork.visualization.svg_graph(adj, pos, directed=True)
             display(SVG(im))
 
-            trajectory = {
-                'states': np.array(states),
-                'actions': np.array(actions),
-                'rewards': np.array(rewards) + bonus**2
-            }
-            self.trajectories.append(trajectory)
+            self.add_trajectory(states, actions, rewards)
+
             self.comp_gain()
             self.score = score
             self.intrinsic_score = bonus

@@ -1,7 +1,7 @@
 import numpy as np
 from utils import argmax_tiebreaker
 from sklearn.neighbors import NearestNeighbors
-from NeuralNets import NNnumpy as NN
+from neural_networks import NNnumpy as NN
 
 
 class NSES_Agent(NN):

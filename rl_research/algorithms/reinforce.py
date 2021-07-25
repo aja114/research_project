@@ -2,14 +2,16 @@ import tensorflow as tf
 import numpy as np
 import random
 
-from .NeuralNets import NNtf as NN
+from .neural_networks import tf_nn_softmax_out
+
 
 class Reinforce:
     def __init__(self, env, *args, **kwargs):
         self.env = env
         self.state_space = len(env.states_n)
         self.action_space = env.actions_n
-        self.policy = NN(*args, inp=self.state_space, out=self.action_space, **kwargs)
+        self.policy = tf_nn_softmax_out(
+            *args, inp=self.state_space, out=self.action_space, **kwargs)
         self.gamma = 0.99
         self.state_freq = {x: 0 for x in self.env.states}
         self.trajectories = []
@@ -39,7 +41,7 @@ class Reinforce:
 
     def get_space_visitation(self):
         space_visitation = 100*sum([x > 1 for x in self.state_freq.values()]
-                      )/len(self.state_freq)
+                                   )/len(self.state_freq)
         return space_visitation
 
     def scale_state(self, s):
@@ -59,6 +61,14 @@ class Reinforce:
                     g[j] = r[j] + self.gamma * g[j+1]
 
                 t['gains'] = g
+
+    def add_trajectory(self, states, actions, rewards):
+        trajectory = {
+            'states': np.array(states),
+            'actions': np.array(actions),
+            'rewards': np.array(rewards)
+        }
+        self.trajectories.append(trajectory)
 
     def play_ep(self, num_ep=1, render=False):
 
@@ -87,12 +97,8 @@ class Reinforce:
 
                 step += 1
 
-            trajectory = {
-                'states': np.array(states),
-                'actions': np.array(actions),
-                'rewards': np.array(rewards)
-            }
-            self.trajectories.append(trajectory)
+            self.add_trajectory(states, actions, rewards)
+
             self.score = score
 
     def update_agent(self):
@@ -154,8 +160,9 @@ class Reinforce:
 
     def train_without_logs(self, num_iter=100):
         self.scores = np.zeros(num_iter)
-        self.space_visitation = np.zeros(num_iter)
         self.intrinsic_scores = np.zeros(num_iter)
+        self.space_visitation = np.zeros(num_iter)
+
         for i in range(num_iter):
             self.play_ep()
             self.update_agent()

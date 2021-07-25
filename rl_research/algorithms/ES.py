@@ -1,9 +1,9 @@
 import numpy as np
-from NeuralNets import NNnumpy as NN
+from neural_networks import np_nn_softmax_out
 from utils import argmax_tiebreaker
 
 
-class ES_Agent(NN):
+class ES_Agent(np_nn_softmax_out):
     def __init__(self, env, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.env = env

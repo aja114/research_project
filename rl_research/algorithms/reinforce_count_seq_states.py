@@ -2,7 +2,6 @@ from collections import defaultdict
 import itertools
 import numpy as np
 from .reinforce_baseline import ReinforceBaseline
-from .reinforce import Reinforce
 
 
 class ReinforceCountSeq(ReinforceBaseline):
@@ -17,46 +16,37 @@ class ReinforceCountSeq(ReinforceBaseline):
             state = self.env.reset()
             rewards, actions, states = [], [], []
             score = 0
-            intrinsic_score = 0
             t = 0
             done = False
-            seq = []
+
             while not done and t < self.env._max_episode_steps:
                 t += 1
-                action_idx, action = self.sample_action(state)
+                action = self.sample_action(state)
                 states.append(state)
-                actions.append(action_idx)
+                actions.append(action)
 
-                state, extrinsic_reward, done, _ = self.env.step(action)
+                state, extrinsic_reward, done, _ = self.env.step(
+                    self.env.actions[action])
 
+                seq = tuple(itertools.chain.from_iterable(states))
                 self.state_freq[state] += 1
+                self.seq_freq[seq] += 1
 
-                if state not in states:
-                    seq += state
-                    self.seq_freq[tuple(seq)] += 1
-                    intrinsic_reward = self.reward_calc(
-                        self.intrinsic_reward, self.seq_freq[tuple(seq)],
-                        t, alg='MBIE-EB')
-                else:
-                    intrinsic_reward = 0
+                intrinsic_reward = ReinforceCountSeq.reward_calc(self.intrinsic_reward,
+                                                                 self.seq_freq[seq]*self.state_freq[state], t, alg='MBIE-EB')
 
                 reward = extrinsic_reward + intrinsic_reward
 
                 rewards.append(reward)
                 score += extrinsic_reward
-                intrinsic_score += intrinsic_reward
 
                 if render:
                     env.render()
 
-            trajectory = {
-                'states': np.array(states),
-                'actions': np.array(actions),
-                'rewards': np.array(rewards)
-            }
-            self.trajectories.append(trajectory)
+            self.add_trajectory(states, actions, rewards)
+
+            self.comp_gain()
             self.score = score
-            self.intrinsic_score = intrinsic_score
 
 
 def train(env, num_iter=100, logs=False):

@@ -2,10 +2,10 @@ import numpy as np
 
 from .reinforce_baseline import ReinforceBaseline
 
+
 class ReinforceCountState(ReinforceBaseline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.intrinsic_reward = 1
 
     def play_ep(self, num_ep=1, render=False):
         for n in range(num_ep):
@@ -30,21 +30,16 @@ class ReinforceCountState(ReinforceBaseline):
                     self.intrinsic_reward, self.state_freq[state], step, alg='MBIE-EB')
 
                 reward = intrinsic_reward + extrinsic_reward
-
                 rewards.append(reward)
+
                 score += extrinsic_reward
                 intrinsic_score += intrinsic_reward
 
                 if render:
                     env.render()
 
-            trajectory = {
-                'states': np.array(states),
-                'actions': np.array(actions),
-                'rewards': np.array(rewards)
-            }
+            self.add_trajectory(states, actions, rewards)
 
-            self.trajectories.append(trajectory)
             self.score = score
             self.intrinsic_score = intrinsic_score
 

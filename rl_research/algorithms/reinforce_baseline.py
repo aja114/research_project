@@ -3,45 +3,15 @@ import tensorflow as tf
 from tensorflow import keras
 import random
 
-from .NeuralNets import NNtf as NN
+from .neural_networks import tf_nn_linear_out
 from .reinforce import Reinforce
-
-class Baseline():
-    def __init__(self, *args, **kwargs):
-        self.build_model(*args, **kwargs)
-
-    def build_model(self, inp=4, h1=256, h2=256, out=1, init_weights=None):
-        self.inp = inp
-        self.out = out
-
-        inp = keras.Input(shape=(inp, ))
-        x = keras.layers.Dense(
-            h1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(inp)
-        x = keras.layers.Dense(
-            h2, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(x)
-        outp = keras.layers.Dense(
-            out, activation='linear', use_bias=True, kernel_initializer='glorot_uniform')(x)
-
-        self.lr = 1e-3
-        self.optimizer = keras.optimizers.Adam(learning_rate=self.lr)
-        self.model = keras.Model(inputs=inp, outputs=outp)
-
-        self.weights = self.model.trainable_weights
-
-    def predict(self, inp):
-        if not isinstance(inp, tf.Tensor):
-            inp = tf.convert_to_tensor(np.array(inp).reshape(-1, self.inp))
-        return self.model(inp).numpy()
-
-    def update(self, grads):
-        self.optimizer.apply_gradients(
-            zip(grads, self.model.trainable_weights))
 
 
 class ReinforceBaseline(Reinforce):
     def __init__(self, env, *args, **kwargs):
         super().__init__(env, *args, **kwargs)
-        self.baseline = Baseline(*args, inp=self.state_space, out=1, **kwargs)
+        self.baseline = tf_nn_linear_out(
+            *args, inp=self.state_space, out=1, **kwargs)
 
     def comp_gain(self):
         for t in self.trajectories:
@@ -56,7 +26,7 @@ class ReinforceBaseline(Reinforce):
 
                 states = tf.cast(
                     tf.convert_to_tensor(t['states']), dtype=tf.float32)
-                g = g - self.baseline.predict(states)
+                g = g - self.baseline.forward(states)
                 t['gains'] = g
 
     def update_agent(self):
@@ -87,11 +57,11 @@ class ReinforceBaseline(Reinforce):
     @tf.function(experimental_relax_shapes=True)
     def update_baseline_net(self, states, gains, gammas):
         with tf.GradientTape() as tape:
-            v_preds = self.baseline.model(states)
+            v_preds = self.baseline.forward(states)
             loss = -tf.math.reduce_mean(v_preds * gains * gammas)
         grads = tape.gradient(loss, self.baseline.weights)
         self.baseline.optimizer.apply_gradients(
-            zip(grads, self.baseline.model.trainable_weights))
+            zip(grads, self.baseline.weights))
 
     @tf.function(experimental_relax_shapes=True)
     def update_policy_net(self, states, actions, gains):
@@ -100,7 +70,7 @@ class ReinforceBaseline(Reinforce):
             loss = -tf.math.reduce_mean(log_prob * gains)
         grads = tape.gradient(loss, self.policy.weights)
         self.policy.optimizer.apply_gradients(
-            zip(grads, self.policy.model.trainable_weights))
+            zip(grads, self.policy.weights))
 
 
 def train(env, num_iter=100, logs=False):

@@ -1,5 +1,5 @@
 import numpy as np
-from NeuralNets import NNnumpy as NN
+from neural_networks import NNnumpy as NN
 from utils import argmax_tiebreaker
 
 

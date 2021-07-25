@@ -6,7 +6,7 @@ import tensorflow as tf
 from tensorflow import keras
 
 
-class NNnumpy:
+class np_nn_softmax_out:
     def __init__(self, inp=2, h1=256, h2=256, out=3, init_weights=None):
         if init_weights:
             self.init_weights(init_weights)
@@ -53,14 +53,14 @@ class NNnumpy:
         return out
 
 
-class NNtf:
+class tf_nn_softmax_out:
     def __init__(self, *args, **kwargs):
         self.build_model(*args, **kwargs)
 
     def build_model(self, inp=2, h1=256, h2=256, out=3, init_weights=None):
         self.inp = inp
         self.out = out
-        
+
         inp = keras.Input(shape=(inp, ))
         x = keras.layers.Dense(
             h1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(inp)
@@ -95,7 +95,43 @@ class NNtf:
         probs = self.model(inp)
         return tfp.distributions.Categorical(probs=probs)
 
-    def update(self, grads):
-        # print(list(zip(grads, self.model.trainable_weights)))
+    def update_params(self, grads):
+        self.optimizer.apply_gradients(
+            zip(grads, self.model.trainable_weights))
+
+
+class tf_nn_linear_out:
+    def __init__(self, *args, **kwargs):
+        self.build_model(*args, **kwargs)
+
+    def build_model(self, inp=4, h1=256, h2=256, out=1, init_weights=None):
+        self.inp = inp
+        self.out = out
+
+        inp = keras.Input(shape=(inp, ))
+        x = keras.layers.Dense(
+            h1, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(inp)
+        x = keras.layers.Dense(
+            h2, activation='relu', use_bias=True, kernel_initializer='glorot_uniform')(x)
+        outp = keras.layers.Dense(
+            out, activation='linear', use_bias=True, kernel_initializer='glorot_uniform')(x)
+
+        self.lr = 1e-3
+        self.optimizer = keras.optimizers.Adam(learning_rate=self.lr)
+        self.model = keras.Model(inputs=inp, outputs=outp)
+
+        self.weights = self.model.trainable_weights
+
+    def forward(self, inp):
+        if not isinstance(inp, tf.Tensor):
+            inp = tf.convert_to_tensor(np.array(inp).reshape(-1, self.inp))
+        return self.model(inp)
+
+    def predict(self, inp):
+        if not isinstance(inp, tf.Tensor):
+            inp = tf.convert_to_tensor(np.array(inp).reshape(-1, self.inp))
+        return self.model(inp).numpy()
+
+    def update_params(self, grads):
         self.optimizer.apply_gradients(
             zip(grads, self.model.trainable_weights))
