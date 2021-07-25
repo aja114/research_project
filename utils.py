@@ -100,3 +100,31 @@ def plot_scores(scores, window_size=100):
                 alpha=0.5, label="total rewards")
     plt.plot(x[window_size - 1:], ma, c='r',
              alpha=0.7, label="reward moving average")
+
+
+def plot_scores_grid(data, labels, num_runs, a):
+    c = 3
+    r = int(round(num_runs / c + 0.49, 0))
+
+    fig, axes = plt.subplots(r, c, figsize=(r*6, c*5), sharey=True)
+    for n in range(num_runs):
+        ax = axes[n // c][n % c]
+        scores = data[(labels[0], str(n))]
+        window_size = 100
+        ma = np.convolve(scores, np.ones(window_size, dtype=int), 'valid')
+        ma /= window_size
+        x = np.arange(len(scores))
+        ax.set_xlabel("episodes")
+        ax.set_ylabel("rewards")
+        ax.scatter(x, scores, marker='+', c='b', s=30, linewidth=1,
+                   alpha=0.5, label="total rewards")
+        ax.plot(x[window_size - 1:], ma, c='r',
+                alpha=0.7, label="reward moving average")
+
+    for i in range(n+1, r*c):
+        ax = axes[i//c][i % c]
+        ax.axis('off')
+
+    fig.suptitle(f'Total rewards over each run for {a}')
+
+    plt.show()
