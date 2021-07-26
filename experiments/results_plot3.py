@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(1, '../')
+
 import pandas as pd
 import numpy as np
 import os
@@ -5,7 +8,7 @@ import sys
 import matplotlib.pyplot as plt
 from IPython.display import display
 
-from utils import plot_scores_grid
+from rl_research.utils import plot_scores_grid
 
 
 if len(sys.argv) > 1:

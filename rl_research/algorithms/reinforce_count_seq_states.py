@@ -1,39 +1,39 @@
 from collections import defaultdict
 import itertools
 import numpy as np
+import random
 from .reinforce_baseline import ReinforceBaseline
 
-
-class ReinforceCountSeq(ReinforceBaseline):
+class ReinforceCountSeqStates(ReinforceBaseline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.seq_freq = defaultdict(int)
-        self.intrinsic_reward = 1
 
     def play_ep(self, num_ep=1, render=False):
-        # print("Number of sequences observed: ", len(self.seq_freq))
         for n in range(num_ep):
             state = self.env.reset()
             rewards, actions, states = [], [], []
             score = 0
-            t = 0
+            step = 0
             done = False
-
-            while not done and t < self.env._max_episode_steps:
-                t += 1
-                action = self.sample_action(state)
+            probs = self.get_proba()
+            
+            while not done and step < self.env._max_episode_steps:
+                step += 1
+                p = probs[state]
+                action_idx = random.choices(range(len(p)), weights=p)[0]
+                action = self.env.actions[action_idx]
                 states.append(state)
-                actions.append(action)
+                actions.append(action_idx)
 
-                state, extrinsic_reward, done, _ = self.env.step(
-                    self.env.actions[action])
+                state, extrinsic_reward, done, _ = self.env.step(action)
 
                 seq = tuple(itertools.chain.from_iterable(states))
                 self.state_freq[state] += 1
                 self.seq_freq[seq] += 1
 
-                intrinsic_reward = ReinforceCountSeq.reward_calc(self.intrinsic_reward,
-                                                                 self.seq_freq[seq]*self.state_freq[state], t, alg='MBIE-EB')
+                intrinsic_reward = self.reward_calc(self.intrinsic_reward,
+                                                                 self.seq_freq[seq] * self.state_freq[state], step, alg='MBIE-EB')
 
                 reward = extrinsic_reward + intrinsic_reward
 
@@ -51,7 +51,7 @@ class ReinforceCountSeq(ReinforceBaseline):
 
 def train(env, num_iter=100, logs=False):
 
-    agent = ReinforceCountSeq(env)
+    agent = ReinforceCountSeqStates(env)
     if logs:
         agent.train(num_iter)
     else:

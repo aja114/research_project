@@ -29,7 +29,7 @@ class NSES_Agent(NN):
             score += reward
             t += 1
 
-        self.bc = (state[0]/self.env.len, state[1])
+        self.bc = (state[0] / self.env.len, state[1])
         self.score = score
 
         return score
@@ -68,7 +68,7 @@ def train(env):
         agent.evaluate()
         archive.add(agent.bc)
 
-    print("\n"+"*"*100)
+    print("\n" + "*" * 100)
     print("TRAINING START\n")
 
     for gen in range(generation):
@@ -92,17 +92,17 @@ def train(env):
             A = (R - np.mean(R)) / np.std(R)
 
         for key in agent.weights:
-            offset = alpha/(npop*sigma) * (N[key] @ A)
+            offset = alpha / (npop * sigma) * (N[key] @ A)
             # print("offset: ", offset)
             # print("weights: ", agent.weights[key])
 
-            agent.weights[key] += alpha/(npop*sigma) * (N[key] @ A)
+            agent.weights[key] += alpha / (npop * sigma) * (N[key] @ A)
 
         agent.evaluate()
         archive.add(agent.bc)
         print("archive: ", archive)
 
-    print("\n"+"*"*100)
+    print("\n" + "*" * 100)
     print("TRAINING ENDED\n")
 
     return agent

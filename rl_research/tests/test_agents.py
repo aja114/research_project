@@ -12,7 +12,7 @@ from ..algorithms import Reinforce, ReinforceBaseline, ReinforceCountState, Rein
 class TestAgents(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.env = gym.make('keygrid-v0', grid_length=3)
+        cls.env = gym.make('keygrid-v0', grid_length=4)
 
     @classmethod
     def tearDownClass(cls):
@@ -75,9 +75,9 @@ class TestAgents(unittest.TestCase):
 
     def test_easy_problem(self):
         for agent in self.agents:
-            agent.train_without_logs(num_iter=100)
+            agent.train_without_logs(num_iter=150)
             score = np.mean(agent.scores)
-            self.assertTrue(score > 10)
+            self.assertTrue(score > (self.env.total_reward // 5))
 
 
 if __name__ == '__main__':

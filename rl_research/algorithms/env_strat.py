@@ -1,6 +1,6 @@
 import numpy as np
-from neural_networks import np_nn_softmax_out
-from utils import argmax_tiebreaker
+from .neural_networks import np_nn_softmax_out
+from ..utils import argmax_tiebreaker
 
 
 class ES_Agent(np_nn_softmax_out):
@@ -69,7 +69,7 @@ def create_pop(env, agent, npop=2, sigma=0.1):
     return new_agents, N
 
 
-def train(env):
+def train(env, generation=300):
     inp = 2
     h1 = 64
     h2 = 64
@@ -78,11 +78,10 @@ def train(env):
     npop = 100
     alpha = 0.05
     sigma = 0.1
-    generation = 300
 
     agent = ES_Agent(env, inp=inp, h1=h1, h2=h2, out=out)
 
-    print("\n"+"*"*100)
+    print("\n" + "*" * 100)
     print("TRAINING START\n")
 
     for gen in range(generation):
@@ -100,13 +99,13 @@ def train(env):
             A = (R - np.mean(R)) / np.std(R)
 
         for key in agent.weights:
-            offset = alpha/(npop*sigma) * (N[key] @ A)
+            offset = alpha / (npop * sigma) * (N[key] @ A)
             agent.weights[key] += offset
 
         agent.evaluate()
         print("Generation:", gen, "Score:", agent.score)
 
-    print("\n"+"*"*100)
+    print("\n" + "*" * 100)
     print("TRAINING ENDED\n")
 
     return agent

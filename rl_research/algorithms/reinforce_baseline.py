@@ -19,8 +19,8 @@ class ReinforceBaseline(Reinforce):
                 r = t['rewards']
                 g = np.zeros(r.shape)
                 g[-1] = r[-1]
-                for j in range(len(r)-2, -1, -1):
-                    g[j] = r[j] + self.gamma * g[j+1]
+                for j in range(len(r) - 2, -1, -1):
+                    g[j] = r[j] + self.gamma * g[j + 1]
 
                 t['gains'] = g
 

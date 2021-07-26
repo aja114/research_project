@@ -99,13 +99,13 @@ error1 = np.std(data1)
 error2 = np.std(data2)
 error3 = np.std(data3)
 
-rects0 = ax.bar(x - 1.5*width, mean0, width*0.8,
+rects0 = ax.bar(x - 1.5 * width, mean0, width * 0.8,
                 yerr=error0, ecolor='black', label=algos[0])
-rects1 = ax.bar(x - 0.5*width, mean1, width*0.8,
+rects1 = ax.bar(x - 0.5 * width, mean1, width * 0.8,
                 yerr=error1, ecolor='black', label=algos[1])
-rects2 = ax.bar(x + 0.5*width, mean2, width*0.8,
+rects2 = ax.bar(x + 0.5 * width, mean2, width * 0.8,
                 yerr=error2, ecolor='black', label=algos[2])
-rects2 = ax.bar(x + 1.5*width, mean3, width*0.8,
+rects2 = ax.bar(x + 1.5 * width, mean3, width * 0.8,
                 yerr=error3, ecolor='black', label=algos[3])
 
 # Add some text for labels, title and custom x-axis tick labels, etc.

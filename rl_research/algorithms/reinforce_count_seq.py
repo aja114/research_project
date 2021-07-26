@@ -1,6 +1,8 @@
 from collections import defaultdict
 import itertools
 import numpy as np
+import random
+
 from .reinforce_baseline import ReinforceBaseline
 from .reinforce import Reinforce
 
@@ -19,9 +21,13 @@ class ReinforceCountSeq(ReinforceBaseline):
             step = 0
             done = False
             seq = []
+            probs = self.get_proba()
+            
             while not done and step < self.env._max_episode_steps:
                 step += 1
-                action_idx, action = self.sample_action(state)
+                p = probs[state]
+                action_idx = random.choices(range(len(p)), weights=p)[0]
+                action = self.env.actions[action_idx]
                 states.append(state)
                 actions.append(action_idx)
 

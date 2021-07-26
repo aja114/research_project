@@ -30,8 +30,8 @@ class Reinforce:
         return action_idx, self.env.actions[action_idx]
 
     def get_policy(self):
-        self.policy = {x: self.get_action(x)[1] for x in self.env.states}
-        return self.policy
+        self.pi = {x: self.get_action(x)[1] for x in self.env.states}
+        return self.pi
 
     def get_proba(self):
         scaled_s = self.scale_state(np.array(self.env.states))
@@ -40,8 +40,8 @@ class Reinforce:
         return p
 
     def get_space_visitation(self):
-        space_visitation = 100*sum([x > 1 for x in self.state_freq.values()]
-                                   )/len(self.state_freq)
+        space_visitation = 100 * sum([x > 1 for x in self.state_freq.values()]
+                                     ) / len(self.state_freq)
         return space_visitation
 
     def scale_state(self, s):
@@ -57,8 +57,8 @@ class Reinforce:
                 g = np.zeros(r.shape)
 
                 g[-1] = r[-1]
-                for j in range(len(r)-2, -1, -1):
-                    g[j] = r[j] + self.gamma * g[j+1]
+                for j in range(len(r) - 2, -1, -1):
+                    g[j] = r[j] + self.gamma * g[j + 1]
 
                 t['gains'] = g
 
@@ -79,7 +79,9 @@ class Reinforce:
             step = 0
             done = False
             probs = self.get_proba()
+
             while not done and step < self.env._max_episode_steps:
+                step += 1
                 p = probs[state]
                 action_idx = random.choices(range(len(p)), weights=p)[0]
                 action = self.env.actions[action_idx]
@@ -94,8 +96,6 @@ class Reinforce:
 
                 if render:
                     env.render()
-
-                step += 1
 
             self.add_trajectory(states, actions, rewards)
 
@@ -130,7 +130,7 @@ class Reinforce:
             zip(grads, self.policy.model.trainable_weights))
 
     def train(self, num_iter=100):
-        print("\n"+"*"*100)
+        print("\n" + "*" * 100)
         print("TRAINING START\n")
 
         self.scores = np.zeros(num_iter)
@@ -155,7 +155,7 @@ class Reinforce:
             self.scores[i] = self.score
             self.intrinsic_scores[i] = self.intrinsic_score
 
-        print("\n"+"*"*100)
+        print("\n" + "*" * 100)
         print("TRAINING ENDED\n")
 
     def train_without_logs(self, num_iter=100):
@@ -173,9 +173,9 @@ class Reinforce:
     @staticmethod
     def reward_calc(base_reward, freq, t, alg='UCB'):
         if alg == 'UCB':
-            return base_reward * np.sqrt(2*np.log(t)/freq)
+            return base_reward * np.sqrt(2 * np.log(t) / freq)
         if alg == 'MBIE-EB':
-            return base_reward * np.sqrt(1/freq)
+            return base_reward * np.sqrt(1 / freq)
         if alg == 'BEB':
             return base_reward / freq
         if alg == 'BEB-SQ':

@@ -13,7 +13,8 @@ def policy_display(env, policy, title):
     states_display(policy, title=title, cbar=False, annot=labels, fmt='s')
 
 
-def states_display(state_array, title=None, figsize=(10, 10), annot=True, fmt="0.1f", linewidths=.5, square=True, cbar=False, cmap="Reds", ax=None):
+def states_display(state_array, title=None, figsize=(10, 10), annot=True,
+                   fmt="0.1f", linewidths=.5, square=True, cbar=False, cmap="Reds", ax=None):
     if ax is None:
         fig, axes = plt.subplots(2, 1, figsize=figsize)
 
@@ -26,13 +27,13 @@ def states_display(state_array, title=None, figsize=(10, 10), annot=True, fmt="0
     sns.heatmap(states_with_key, annot=annot_with_key, fmt=fmt, linewidths=linewidths,
                 square=square, cbar=cbar, cmap=cmap, ax=axes[0],
                 cbar_kws={"orientation": "horizontal"},
-                annot_kws={"size": int(figsize[1]*1.2)})
+                annot_kws={"size": int(figsize[1] * 1.2)})
     axes[0].set_title('Policy without Key')
 
     sns.heatmap(states_without_key, annot=annot_without_key, fmt=fmt, linewidths=linewidths,
                 square=square, cbar=cbar, cmap=cmap, ax=axes[1],
                 cbar_kws={"orientation": "horizontal"},
-                annot_kws={"size": int(figsize[1]*1.2)})
+                annot_kws={"size": int(figsize[1] * 1.2)})
     axes[1].set_title('Policy with Key')
 
     if title is not None:
@@ -61,7 +62,8 @@ def epsilon_greedy_policy(state, q_array, epsilon, actions):
     return action_idx
 
 
-def qtable_display(q_array, title=None, figsize=(7, 7), annot=True, fmt="0.1f", linewidths=.5, square=True, cbar=False, cmap="Reds"):
+def qtable_display(q_array, title=None, figsize=(7, 7), annot=True,
+                   fmt="0.1f", linewidths=.5, square=True, cbar=False, cmap="Reds"):
     num_actions = q_array.shape[-1]
 
     global_figsize = list(figsize)
@@ -106,7 +108,7 @@ def plot_scores_grid(data, labels, num_runs, a):
     c = 3
     r = int(round(num_runs / c + 0.49, 0))
 
-    fig, axes = plt.subplots(r, c, figsize=(r*6, c*5), sharey=True)
+    fig, axes = plt.subplots(r, c, figsize=(r * 6, c * 5), sharey=True)
     for n in range(num_runs):
         ax = axes[n // c][n % c]
         scores = data[(labels[0], str(n))]
@@ -121,8 +123,8 @@ def plot_scores_grid(data, labels, num_runs, a):
         ax.plot(x[window_size - 1:], ma, c='r',
                 alpha=0.7, label="reward moving average")
 
-    for i in range(n+1, r*c):
-        ax = axes[i//c][i % c]
+    for i in range(n + 1, r * c):
+        ax = axes[i // c][i % c]
         ax.axis('off')
 
     fig.suptitle(f'Total rewards over each run for {a}')

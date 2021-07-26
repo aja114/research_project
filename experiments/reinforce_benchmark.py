@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(1, '../')
+
 import gym
 import gym_keygrid
 
@@ -7,10 +10,10 @@ import numpy as np
 from datetime import datetime
 import os
 
-from reinforce_baseline import train as train_reinforce
-from reinforce_count_states import train as train_reinforce_state
-from reinforce_count_seq import train as train_reinforce_seq
-from reinforce_count_seq_states import train as train_reinforce_st_seq
+from rl_research.algorithms.reinforce_baseline import train as train_reinforce
+from rl_research.algorithms.reinforce_count_states import train as train_reinforce_state
+from rl_research.algorithms.reinforce_count_seq import train as train_reinforce_seq
+from rl_research.algorithms.reinforce_count_seq_states import train as train_reinforce_st_seq
 
 folder_name = f"data/exp{datetime.now().strftime('%Y_%m_%d_%H%M')}"
 
@@ -21,11 +24,11 @@ res_r_st = {}
 res_r_seq = {}
 #res_r_st_seq = {}
 
-for i, L in enumerate([20]):
-    env = gym.make('keygrid-v0', grid_length=L)
+for i, L in enumerate([10]):
+    env = gym.make('keygrid-v1', grid_length=L)
     env.render()
-    num_ep = 2200
-    for it in range(10):
+    num_ep = 6000
+    for it in range(5):
         print(f'iteration {it}')
         agent_r = train_reinforce(env, num_ep)
         agent_r_st = train_reinforce_state(env, num_ep)

@@ -22,7 +22,7 @@ class np_nn_softmax_out:
 
     @staticmethod
     def xavier_init(h1, h2):
-        glorot = 1.0*np.sqrt(6.0/(h1+h2))
+        glorot = 1.0 * np.sqrt(6.0 / (h1 + h2))
         size = (h1, h2)
         return np.random.uniform(-glorot, glorot, size)
 

@@ -1,10 +1,10 @@
 import numpy as np
-from neural_networks import NNnumpy as NN
-from utils import argmax_tiebreaker
+from .neural_networks import np_nn_softmax_out
+from ..utils import argmax_tiebreaker
 
 
 class GA_Agent:
-    def __init__(self, env, inp=2, h1=64, h2=64, out=3, mu_prob=0.1):
+    def __init__(self, env, inp=2, h1=256, h2=256, out=3, mu_prob=0.3):
         self.env = env
 
         self.inp = inp
@@ -13,7 +13,7 @@ class GA_Agent:
         self.n_out = out
         self.mu_prob = mu_prob
 
-        self.net = NN(inp, h1, h2, out)
+        self.net = np_nn_softmax_out(inp, h1, h2, out)
         self.score = 0
 
     def reborn(self, parents):
@@ -27,11 +27,11 @@ class GA_Agent:
     def mutate(self):
         for key in self.net.weights:
             mask = np.random.choice([0, 1], size=self.net.weights[key].shape, p=[
-                                    1-self.mu_prob, self.mu_prob])
+                                    1 - self.mu_prob, self.mu_prob])
 
-            random = NN.xavier_init(mask.shape[0], mask.shape[1])
+            random = np_nn_softmax_out.xavier_init(mask.shape[0], mask.shape[1])
             self.net.weights[key] = np.where(
-                mask == 1, self.net.weights[key]+random, self.net.weights[key])
+                mask == 1, self.net.weights[key] + random, self.net.weights[key])
 
     def get_action(self, state):
         if isinstance(state, tuple):
@@ -64,7 +64,7 @@ class GA_Agent:
 
 
 def select_next_gen(agent_set, n_selected):
-    n_best = int(n_selected*0.8)
+    n_best = int(n_selected * 0.8)
     n_random = n_selected - n_best
 
     sorted_agents = sorted(
@@ -82,20 +82,20 @@ def select_next_gen(agent_set, n_selected):
 
 
 def select_parents(agent_set):
-    return np.random.choice(agent_set, size=2, p=NN.softmax([agent.score for agent in agent_set]))
+    return np.random.choice(agent_set, size=2, p=np_nn_softmax_out.softmax(
+        [agent.score for agent in agent_set]))
 
 
 def get_best_agent(best_agents):
     return max(best_agents, key=lambda x: x.score)
 
 
-def train(env):
+def train(env, generation=100):
     inp = 2
     h1 = 64
     h2 = 64
     out = 3
     mu_prob = 0.2
-    generation = 100
     population = 30
 
     prop_selected = 0.3
@@ -112,10 +112,10 @@ def train(env):
     score_evolution = []
     time_evolution = []
 
-    print("\n"+"*"*100)
+    print("\n" + "*" * 100)
     print("TRAINING START\n")
 
-    for gen in range(1, generation+1):
+    for gen in range(1, generation + 1):
         for new_child in next_children:
             parents = select_parents(selected)
             new_child.reborn(parents)
@@ -130,7 +130,7 @@ def train(env):
         print("Generation:", gen, "Score:", best.score)
         score_evolution.append(best.score)
 
-    print("\n"+"*"*100)
+    print("\n" + "*" * 100)
     print("TRAINING ENDED\n")
 
     return best_agents

@@ -13,7 +13,7 @@ for j in range(n):
     inf_hor.append(running_inf_hor)
     discount.append(gamma**j)
 
-true_hor = [1/(1-gamma)]*n
+true_hor = [1 / (1 - gamma)] * n
 
 
 fig = plt.figure()
