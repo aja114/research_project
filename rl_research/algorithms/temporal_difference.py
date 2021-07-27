@@ -27,7 +27,7 @@ def td_learning(policy, env, alpha=0.1, alpha_factor=0.995,
             t += 1
 
         if display and e % DISPLAY_EVERY_N_EPISODES == 0:
-            states_display(v_array.T)
+            plot_states(v_array.T)
 
     return v_array.T.reshape((2, -1, env.len), order='F')
 
@@ -40,7 +40,7 @@ def q_learning(env, alpha=0.1, alpha_factor=0.9995, gamma=0.9,
 
     for episode_index in range(num_episodes):
         if display and episode_index % DISPLAY_EVERY_N_EPISODES == 0:
-            qtable_display(q_array, title="Q table", cbar=True)
+            plot_qtables(q_array, title="Q table", cbar=True)
 
         # Update alpha
         if alpha_factor is not None:

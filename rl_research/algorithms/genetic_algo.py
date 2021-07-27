@@ -29,14 +29,15 @@ class GA_Agent:
             mask = np.random.choice([0, 1], size=self.net.weights[key].shape, p=[
                                     1 - self.mu_prob, self.mu_prob])
 
-            random = np_nn_softmax_out.xavier_init(mask.shape[0], mask.shape[1])
+            random = np_nn_softmax_out.xavier_init(
+                mask.shape[0], mask.shape[1])
             self.net.weights[key] = np.where(
                 mask == 1, self.net.weights[key] + random, self.net.weights[key])
 
     def get_action(self, state):
         if isinstance(state, tuple):
             state = np.array(state)
-        if(state.shape[0] != 1):
+        if state.shape[0] != 1:
             state = state.reshape(1, -1)
 
         return self.env.actions[argmax_tiebreaker(self.net.forward(state))]

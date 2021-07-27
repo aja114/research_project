@@ -1,10 +1,7 @@
 from collections import defaultdict
-import itertools
-import numpy as np
 import random
 
 from .reinforce_baseline import ReinforceBaseline
-from .reinforce import Reinforce
 
 
 class ReinforceCountSeq(ReinforceBaseline):
@@ -13,7 +10,7 @@ class ReinforceCountSeq(ReinforceBaseline):
         self.seq_freq = defaultdict(int)
 
     def play_ep(self, num_ep=1, render=False):
-        for n in range(num_ep):
+        for _ in range(num_ep):
             state = self.env.reset()
             rewards, actions, states = [], [], []
             score = 0
@@ -22,7 +19,7 @@ class ReinforceCountSeq(ReinforceBaseline):
             done = False
             seq = []
             probs = self.get_proba()
-            
+
             while not done and step < self.env._max_episode_steps:
                 step += 1
                 p = probs[state]
@@ -51,7 +48,7 @@ class ReinforceCountSeq(ReinforceBaseline):
                 intrinsic_score += intrinsic_reward
 
                 if render:
-                    env.render()
+                    self.env.render()
 
             self.add_trajectory(states, actions, rewards)
 

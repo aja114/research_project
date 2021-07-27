@@ -4,6 +4,7 @@ import numpy as np
 import random
 from .reinforce_baseline import ReinforceBaseline
 
+
 class ReinforceCountSeqStates(ReinforceBaseline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,7 +18,7 @@ class ReinforceCountSeqStates(ReinforceBaseline):
             step = 0
             done = False
             probs = self.get_proba()
-            
+
             while not done and step < self.env._max_episode_steps:
                 step += 1
                 p = probs[state]
@@ -33,7 +34,7 @@ class ReinforceCountSeqStates(ReinforceBaseline):
                 self.seq_freq[seq] += 1
 
                 intrinsic_reward = self.reward_calc(self.intrinsic_reward,
-                                                                 self.seq_freq[seq] * self.state_freq[state], step, alg='MBIE-EB')
+                                                    self.seq_freq[seq] * self.state_freq[state], step, alg='MBIE-EB')
 
                 reward = extrinsic_reward + intrinsic_reward
 

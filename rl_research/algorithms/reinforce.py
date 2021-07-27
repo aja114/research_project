@@ -13,9 +13,10 @@ class Reinforce:
         self.policy = tf_nn_softmax_out(
             *args, inp=self.state_space, out=self.action_space, **kwargs)
         self.gamma = 0.99
+        self.intrinsic_reward = 1
         self.state_freq = {x: 0 for x in self.env.states}
         self.trajectories = []
-        self.intrinsic_reward = 1
+        self.score = 0
         self.intrinsic_score = 0
 
     def sample_action(self, inp):
