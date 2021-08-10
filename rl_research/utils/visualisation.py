@@ -1,10 +1,12 @@
 import random
 import numpy as np
+import scipy
 import matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 sns.set_context("talk")
-
+import sknetwork
+from IPython.display import SVG
 
 def plot_policy(env, policy, title):
     policy = np.array([policy[s] for s in env.states])
@@ -114,13 +116,13 @@ def plot_scores_grid(data, label, num_runs, a):
 
     plt.show()
 
-def plot_intrinsic_scores(intrinsic_scores, ax=None, space_visitation=None):
+def plot_scores(intrinsic_scores, ax=None, space_visitation=None):
     window_size = 50
     ma = np.convolve(intrinsic_scores, np.ones(window_size, dtype=int), 'valid')
     ma /= window_size
 
     if not ax:
-        ax = plt.subplots(1, 1)
+        fig, ax = plt.subplots(1, 1)
 
     x = np.arange(len(intrinsic_scores))
 
@@ -136,3 +138,11 @@ def plot_intrinsic_scores(intrinsic_scores, ax=None, space_visitation=None):
         ax2.plot(x, space_visitation, c='black')
         ax2.set_ylabel("space visitation in %")
         ax2.set_ylim([0, 100])
+
+def plot_trajectory(graph):
+    adj = scipy.sparse.csr_matrix(graph.get_adjacency_matrix())
+    graph.convert_labels('adjacency')
+    pos = np.array([tuple(map(int, graph.index_node_labels[i]))
+                    for i in range(len(graph.index_node_labels))])
+    im = sknetwork.visualization.svg_graph(adj, pos, directed=True)
+    return SVG(im)

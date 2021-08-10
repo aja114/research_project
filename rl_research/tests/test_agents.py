@@ -6,7 +6,7 @@ import copy
 import gym
 import gym_keygrid
 
-from ..algorithms import Reinforce, ReinforceBaseline, ReinforceCountState, ReinforceCountSeq
+from ..algorithms import Reinforce, ReinforceBaseline, ReinforceCountState, ReinforceCountSeq, ReinforceSeqComp
 
 
 class TestAgents(unittest.TestCase):
@@ -24,7 +24,8 @@ class TestAgents(unittest.TestCase):
         self.env = __class__.env
         self.env.reset()
         self.agents = [Reinforce(self.env), ReinforceBaseline(
-            self.env), ReinforceCountState(self.env), ReinforceCountSeq(self.env)]
+            self.env), ReinforceCountState(self.env), ReinforceCountSeq(self.env),
+            ReinforceSeqComp(self.env)]
 
     def test_sample_actions(self):
         state = self.env.sample_state()

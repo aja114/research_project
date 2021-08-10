@@ -1,50 +1,53 @@
-from collections import defaultdict
+from collections import defaultdict, deque
 import itertools
+import random
+
 import numpy as np
 import scipy
-from .reinforce_baseline import ReinforceBaseline
-from .reinforce import Reinforce
-
 import grakel
 import networkx as nx
 import sknetwork
-from IPython.display import SVG
+from IPython.display import display, SVG
 
+from .reinforce_baseline import ReinforceBaseline
+from ..utils import plot_trajectory
 
 class ReinforceSeqComp(ReinforceBaseline):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.seq_freq = defaultdict(int)
-        self.intrinsic_reward = 1
-        self.sequence_archive = []
+        self.sequence_archive = deque(maxlen=100)
+        self.kernel = grakel.WeisfeilerLehman(normalize=True)
+        self.intrinsic_reward = 0.01
 
     def play_ep(self, num_ep=1, render=False):
-        # print("Number of sequences observed: ", len(self.seq_freq))
-        graph_kernel = grakel.WeisfeilerLehman(normalize=True)
         for n in range(num_ep):
-            state = self.env.reset()
             rewards, actions, states = [], [], []
+            state = self.env.reset()
             score = 0
-            t = 0
+            step = 0
             done = False
+
             G = nx.DiGraph()
             G.add_node(state)
-            G.nodes[state]['label'] = state
+            G.nodes[state]['label'] = ''.join(map(str, state))
 
-            while not done and t < self.env._max_episode_steps:
-                t += 1
-                action = self.sample_action(state)
+            probs = self.get_proba()
+            while not done and step < self.env._max_episode_steps:
+                step += 1
+                p = probs[state]
+                action_idx = random.choices(range(len(p)), weights=p)[0]
+                action = self.env.actions[action_idx]
                 states.append(state)
-                actions.append(action)
+                actions.append(action_idx)
 
-                state, reward, done, _ = self.env.step(
-                    self.env.actions[action])
+                state, reward, done, _ = self.env.step(action)
 
                 self.state_freq[state] += 1
 
-                G.add_node(state)
-                G.nodes[state]['label'] = state
-                G.add_edge(states[-1], state)
+                if state not in states:
+                    G.add_node(state)
+                    G.nodes[state]['label'] = ''.join(map(str, state))
+                    G.add_edge(states[-1], state)
 
                 rewards.append(reward)
                 score += reward
@@ -52,35 +55,27 @@ class ReinforceSeqComp(ReinforceBaseline):
                 if render:
                     env.render()
 
-            graph_info = list(grakel.graph_from_networkx(
-                [G], node_labels_tag='label'))[0]
-            print(graph_info)
-            graph = grakel.Graph(graph_info[0], node_labels=graph_info[1])
-            graph_kernel.fit([graph])
+            graph = list(grakel.graph_from_networkx([G], node_labels_tag='label'))[0]
+            # graph = grakel.Graph(graph_info[0], node_labels=graph_info[1])
+            # display(plot_trajectory(graph))
 
-            if self.sequence_archive:
-                distances = graph_kernel.transform(self.sequence_archive)
-                bonus = (1 / np.mean(distances)) - 1
-                print(distances.T)
-                print(bonus)
+            if graph not in self.sequence_archive:
+                self.sequence_archive.append(graph)
+                self.kernel.fit([graph])
+                distances = self.kernel.transform(self.sequence_archive)
+                bonus = self.intrinsic_reward / np.mean(np.sort(distances)[:15])
+                rewards += bonus
             else:
                 bonus = 0
-
-            self.sequence_archive.append(graph)
-
-            adj = scipy.sparse.csr_matrix(graph.get_adjacency_matrix())
-            print(adj.toarray())
-            graph.convert_labels('adjacency')
-            pos = np.array([graph.index_node_labels[i]
-                            for i in range(len(graph.index_node_labels))])
-            im = sknetwork.visualization.svg_graph(adj, pos, directed=True)
-            display(SVG(im))
+            #
+            # print('bonus: ', bonus*len(states))
+            # print('number of sequences: ', len(self.sequence_archive))
 
             self.add_trajectory(states, actions, rewards)
 
             self.comp_gain()
             self.score = score
-            self.intrinsic_score = bonus
+            self.intrinsic_score = bonus*len(states)
 
 
 def train(env, num_iter=100, logs=False):

@@ -34,6 +34,27 @@ class Reinforce:
         self.pi = {x: self.get_action(x)[1] for x in self.env.states}
         return self.pi
 
+    def evaluate_policy(self):
+        pi = self.get_policy()
+        render = True
+        state = self.env.reset()
+        score = 0
+        step = 0
+        done = False
+
+        while not done and step < self.env._max_episode_steps:
+            step += 1
+            action = pi[state]
+
+            state, reward, done, _ = self.env.step(action)
+            score += reward
+
+            if render:
+                self.env.render()
+
+        return reward
+
+
     def get_proba(self):
         scaled_s = self.scale_state(np.array(self.env.states))
         probas = self.policy.forward(scaled_s)
@@ -141,7 +162,7 @@ class Reinforce:
         for i in range(num_iter):
             print()
             print("Iteration: ", i)
-            if i % 10 == 0:
+            if i % 20 == 0:
                 p = self.get_proba()
                 for st in self.env.states:
                     print(st, "probas: ", np.round(p[st], 2))

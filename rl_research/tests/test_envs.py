@@ -29,8 +29,9 @@ class TestEnvironment(unittest.TestCase):
             while not done and step < env._max_episode_steps:
                 step += 1
                 action = env.opt_policy[state]
-                state, reward, done, _ = env.step(action)
+                new_state, reward, done, _ = env.step(action)
                 total_reward += reward
+                state = new_state
 
             self.assertTrue(done)
             self.assertEqual(total_reward, env.total_reward)

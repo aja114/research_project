@@ -11,29 +11,32 @@ import gym_keygrid
 from rl_research.algorithms.reinforce_baseline import train as train_reinforce
 from rl_research.algorithms.reinforce_count_states import train as train_reinforce_state
 from rl_research.algorithms.reinforce_count_seq import train as train_reinforce_seq
+from rl_research.algorithms.reinforce_seq_comp import train as train_reinforce_seq_comp
 
 folder_name = f"data/exp{datetime.now().strftime('%Y_%m_%d_%H%M')}"
 
 algorithm_names = ["reinforce_res",
                    "reinforce_res_st",
-                   "reinforce_res_seq"
+                   "reinforce_res_seq",
+                   "reinforce_seq_comp"
                    ]
 
 algorithm_functions = [train_reinforce,
                        train_reinforce_state,
-                       train_reinforce_seq
+                       train_reinforce_seq,
+                       train_reinforce_seq_comp
                        ]
 
 algorithms = list(zip(algorithm_names, algorithm_functions))
 
 results = {algo: {} for algo in algorithm_names}
 
-grid_lengths = [6, 8]
-num_eps = [1500, 3000]
+grid_lengths = [20]
+num_eps = [2300]
 num_iter = 10
 
 for i, (num_ep, grid_length) in enumerate(zip(num_eps, grid_lengths)):
-    env = gym.make('keygrid-v1', grid_length=grid_length)
+    env = gym.make('keygrid-v0', grid_length=grid_length)
     env.render()
     for it in range(num_iter):
         print(f'iteration {it}')
@@ -42,6 +45,7 @@ for i, (num_ep, grid_length) in enumerate(zip(num_eps, grid_lengths)):
             agent = algorithm_function(env, num_ep)
             key = (grid_length, it)
             results[algorithm_name][key] = agent.scores
+            print(algorithm_name, np.sum(agent.scores))
 
 os.mkdir(folder_name)
 

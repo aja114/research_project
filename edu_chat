@@ -1,0 +1,13 @@
+Try to use JAX 
+- uses numpy frontend 
+- uses tf backend to do the computations
+
+Use W&B 
+- ship the data, they store the data, get the representation
+- free for single user
+
+Mendeley
+- Litterature management
+
+Engineering in RL
+- Impala + Seed RL 
