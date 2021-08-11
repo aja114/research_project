@@ -48,14 +48,3 @@ class ReinforceCountSeqStates(ReinforceBaseline):
 
             self.comp_gain()
             self.score = score
-
-
-def train(env, num_iter=100, logs=False):
-
-    agent = ReinforceCountSeqStates(env)
-    if logs:
-        agent.train(num_iter)
-    else:
-        agent.train_without_logs(num_iter)
-
-    return agent

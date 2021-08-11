@@ -45,14 +45,3 @@ class ReinforceCountState(ReinforceBaseline):
 
             self.score = score
             self.intrinsic_score = intrinsic_score
-
-
-def train(env, num_iter=100, logs=False):
-
-    agent = ReinforceCountState(env)
-    if logs:
-        agent.train(num_iter)
-    else:
-        agent.train_without_logs(num_iter)
-
-    return agent

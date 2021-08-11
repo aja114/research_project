@@ -71,13 +71,3 @@ class ReinforceBaseline(Reinforce):
         grads = tape.gradient(loss, self.policy.weights)
         self.policy.optimizer.apply_gradients(
             zip(grads, self.policy.weights))
-
-
-def train(env, num_iter=100, logs=False):
-    agent = ReinforceBaseline(env)
-    if logs:
-        agent.train(num_iter)
-    else:
-        agent.train_without_logs(num_iter)
-
-    return agent

@@ -140,9 +140,9 @@ def plot_scores(intrinsic_scores, ax=None, space_visitation=None):
         ax2.set_ylim([0, 100])
 
 def plot_trajectory(graph):
-    adj = scipy.sparse.csr_matrix(graph.get_adjacency_matrix())
     graph.convert_labels('adjacency')
-    pos = np.array([tuple(map(int, graph.index_node_labels[i]))
+    adj = scipy.sparse.csr_matrix(graph.get_adjacency_matrix())
+    pos = np.array([tuple(map(int, graph.index_node_labels[i].split('.')))
                     for i in range(len(graph.index_node_labels))])
     im = sknetwork.visualization.svg_graph(adj, pos, directed=True)
     return SVG(im)

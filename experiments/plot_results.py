@@ -14,7 +14,7 @@ else:
 if not os.path.isdir(exp):
     raise FileNotFoundError
 
-algorithms = [x[:-4] for x in os.listdir(f'{exp}')]
+algorithms = [x[:-4] for x in os.listdir(f'{exp}') if x!='results.csv']
 algorithms.sort(key = lambda x: len(x))
 
 data = {}

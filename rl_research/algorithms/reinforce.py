@@ -8,6 +8,8 @@ from .neural_networks import tf_nn_softmax_out
 class Reinforce:
     def __init__(self, env, *args, **kwargs):
         self.env = env
+        self.env_solved = False
+        self.threshold = 10
         self.state_space = len(env.states_n)
         self.action_space = env.actions_n
         self.policy = tf_nn_softmax_out(
@@ -177,6 +179,10 @@ class Reinforce:
             self.scores[i] = self.score
             self.intrinsic_scores[i] = self.intrinsic_score
 
+            if i > self.threshold and np.all(self.scores[i-self.threshold: i] == self.env.total_reward):
+                self.env_solved = True
+                break
+
         print("\n" + "*" * 100)
         print("TRAINING ENDED\n")
 
@@ -184,6 +190,7 @@ class Reinforce:
         self.scores = np.zeros(num_iter)
         self.intrinsic_scores = np.zeros(num_iter)
         self.space_visitation = np.zeros(num_iter)
+        environment_solved = False
 
         for i in range(num_iter):
             self.play_ep()
@@ -191,6 +198,10 @@ class Reinforce:
             self.scores[i] = self.score
             self.intrinsic_scores[i] = self.intrinsic_score
             self.space_visitation[i] = self.get_space_visitation()
+
+            if i > self.threshold and np.all(self.scores[i-self.threshold: i] == self.env.total_reward):
+                self.env_solved = True
+                break
 
     @staticmethod
     def reward_calc(base_reward, freq, t, alg='UCB'):
@@ -202,14 +213,3 @@ class Reinforce:
             return base_reward / freq
         if alg == 'BEB-SQ':
             return base_reward / freq**2
-
-
-def train(env, num_iter=100, logs=False):
-
-    agent = Reinforce(env)
-    if logs:
-        agent.train(num_iter)
-    else:
-        agent.train_without_logs(num_iter)
-
-    return agent
